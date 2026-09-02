@@ -1,8 +1,9 @@
 ---
 import { Image } from "astro:assets";
 import { slides } from "../lib/slides";
+import Carousel from "./Carousel.astro";
 
-const total = slides.length;
+const total = slides.length + 1; // + the case carousel section
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
@@ -46,6 +47,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
       </section>
     ))
   }
+
+  <Carousel />
 </main>
 
 <div class="hud">
@@ -73,47 +76,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 </script>
 
 <style>
-  #deck {
-    display: block;
-  }
-
-  .slide {
-    position: relative;
-    min-height: 100svh;
-    scroll-snap-align: start;
-    display: grid;
-    place-items: center;
-    background: var(--black);
-    overflow: hidden;
-  }
-
-  /* 16:9 frame — deck art is never cropped */
-  .frame {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    width: min(100vw, 177.7778vh);
-    background: var(--black);
-    opacity: 0.35;
-    transform: scale(1.03);
-    transition:
-      opacity 0.7s var(--ease),
-      transform 0.9s var(--ease);
-  }
-  .slide.in .frame {
-    opacity: 1;
-    transform: none;
-  }
-
-  .frame :global(img),
-  .frame video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
   /* scroll progress — top */
   .bar {
     position: fixed;

@@ -1,4 +1,4 @@
-/* RAYO — scroll deck. Minimal reset + tokens. */
+/* RAYO — scroll deck. Reset + tokens + shared slide/frame layout. */
 
 *,
 *::before,
@@ -63,6 +63,71 @@ a {
   outline-offset: 3px;
 }
 
+/* --- shared deck layout (used by Deck.astro slides and Carousel.astro) --- */
+
+#deck {
+  display: block;
+}
+
+.slide {
+  position: relative;
+  min-height: 100svh;
+  scroll-snap-align: start;
+  display: grid;
+  place-items: center;
+  background: var(--black);
+  overflow: hidden;
+}
+
+/* 16:9 frame — deck art is never cropped */
+.frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: min(100vw, 177.7778vh);
+  background: var(--black);
+  overflow: hidden;
+  opacity: 0.25;
+  transition: opacity 0.6s var(--ease);
+}
+.slide.in .frame {
+  opacity: 1;
+}
+
+/* full-bleed slide media: clip-reveal + settle + parallax hook (--py) */
+.frame > img,
+.frame > video {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8%;
+  width: 100%;
+  height: 116%;
+  object-fit: cover;
+  object-position: center;
+  will-change: transform;
+  clip-path: inset(0 0 0 100%);
+  transform: translate3d(0, 0, 0) scale(1.12);
+  transition:
+    clip-path 1s var(--ease),
+    transform 1.3s var(--ease);
+}
+.slide.in .frame > img,
+.slide.in .frame > video {
+  clip-path: inset(0 0 0 0%);
+  transform: translate3d(0, var(--py, 0px), 0) scale(1);
+}
+
+/* first slide: no wipe, no wait — reveal instantly */
+#s1 .frame {
+  opacity: 1;
+}
+#s1 .frame > img,
+#s1 .frame > video {
+  clip-path: none;
+  transform: translate3d(0, var(--py, 0px), 0) scale(1);
+  transition: transform 1.3s var(--ease);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -73,5 +138,12 @@ a {
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+  .frame,
+  .frame > img,
+  .frame > video {
+    opacity: 1 !important;
+    clip-path: none !important;
+    transform: none !important;
   }
 }

@@ -55,12 +55,27 @@ if (deck) {
   );
   sections.forEach((s) => io.observe(s));
 
-  // --- scroll progress bar ---
+  // --- scroll progress bar + parallax drift ---
+  const frames = sections.map((s) => s.querySelector<HTMLElement>(".frame"));
+  const AMP = reduce ? 0 : 0.05; // fraction of viewport height
   let ticking = false;
-  function updateBar() {
+  function onScroll() {
     const max = root.scrollHeight - innerHeight;
     const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
     bar.style.width = `${p * 100}%`;
+
+    for (let i = 0; i < sections.length; i++) {
+      const r = sections[i].getBoundingClientRect();
+      // reveal anything that has reached the viewport (belt-and-braces with the IO)
+      if (r.top < innerHeight * 0.85 && r.bottom > innerHeight * 0.15)
+        sections[i].classList.add("in");
+      if (r.bottom < -80 || r.top > innerHeight + 80) continue;
+      if (AMP) {
+        const centre = (r.top + r.height / 2) / innerHeight; // 0.5 = centred
+        const py = Math.max(-1, Math.min(1, 0.5 - centre)) * AMP * innerHeight;
+        frames[i]?.style.setProperty("--py", `${py.toFixed(1)}px`);
+      }
+    }
     ticking = false;
   }
   addEventListener(
@@ -68,12 +83,12 @@ if (deck) {
     () => {
       if (!ticking) {
         ticking = true;
-        requestAnimationFrame(updateBar);
+        requestAnimationFrame(onScroll);
       }
     },
     { passive: true },
   );
-  updateBar();
+  onScroll();
 
   // --- jump to a slide ---
   let snapTimer = 0;
