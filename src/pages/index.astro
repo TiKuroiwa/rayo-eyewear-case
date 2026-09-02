@@ -1,0 +1,9 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Deck from "../components/Deck.astro";
+import { meta } from "../lib/slides";
+---
+
+<Layout title={meta.title} description={meta.description}>
+  <Deck />
+</Layout>

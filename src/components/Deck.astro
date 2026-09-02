@@ -1,0 +1,234 @@
+---
+import { Image } from "astro:assets";
+import { slides } from "../lib/slides";
+
+const total = slides.length;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<div
+  id="deck"
+  role="region"
+  aria-roledescription="slideshow"
+  aria-label="RAYO Eyewear — Collection 01"
+  tabindex="0"
+>
+  <div class="stage">
+    {
+      slides.map((slide, i) => (
+        <figure
+          class:list={["slide", { on: i === 0 }]}
+          aria-hidden={i === 0 ? "false" : "true"}
+          aria-roledescription="slide"
+          aria-label={`${i + 1} / ${total} — ${slide.label}`}
+        >
+          {slide.video ? (
+            <video
+              data-video
+              poster={slide.src.src}
+              muted
+              loop
+              playsinline
+              preload={i < 3 ? "auto" : "metadata"}
+              aria-label={slide.alt}
+            >
+              <source src={`${slide.video}.webm`} type="video/webm" />
+              <source src={`${slide.video}.mp4`} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={slide.src}
+              alt={slide.alt}
+              widths={[1280, 1920, 2560, 3840]}
+              sizes="100vw"
+              loading={i < 2 ? "eager" : "lazy"}
+              decoding="async"
+            />
+          )}
+        </figure>
+      ))
+    }
+
+    <button class="edge prev" data-nav="prev" aria-label="Slide anterior"></button>
+    <button class="edge next" data-nav="next" aria-label="Próximo slide"></button>
+  </div>
+
+  <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+
+  <div class="hud">
+    <button type="button" class="arw" data-nav="prev" aria-label="Slide anterior">
+      <span aria-hidden="true">‹</span>
+    </button>
+    <p class="count" aria-live="polite">
+      <b id="count-cur">{pad(1)}</b>
+      <span> / {pad(total)}</span>
+    </p>
+    <button type="button" class="arw" data-nav="next" aria-label="Próximo slide">
+      <span aria-hidden="true">›</span>
+    </button>
+  </div>
+
+  <button type="button" id="fs" class="fs" aria-label="Tela cheia">
+    <span aria-hidden="true">⤢</span>
+  </button>
+
+  <p class="hint" id="hint" aria-hidden="true">← →</p>
+</div>
+
+<style>
+  #deck {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  #deck:focus {
+    outline: none;
+  }
+
+  /* 16:9 frame, as large as fits — deck art is never cropped */
+  .stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: min(100vw, 177.7778vh);
+    background: var(--black);
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.45s var(--ease),
+      visibility 0.45s var(--ease);
+  }
+  .slide.on {
+    opacity: 1;
+    visibility: visible;
+  }
+  .slide :global(img),
+  .slide video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  /* invisible click zones over the stage */
+  .edge {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30%;
+    z-index: 5;
+    background: transparent;
+    border: 0;
+  }
+  .edge.prev {
+    left: 0;
+    cursor: w-resize;
+  }
+  .edge.next {
+    right: 0;
+    cursor: e-resize;
+  }
+
+  /* progress bar — top of viewport */
+  .bar {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 20;
+  }
+  .bar i {
+    display: block;
+    height: 100%;
+    width: 8.33%;
+    background: var(--bolt);
+    transition: width 0.45s var(--ease);
+  }
+
+  /* nav — bottom-center of viewport */
+  .hud {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(14px, 2.4vw, 26px);
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .count {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    user-select: none;
+  }
+  .count b {
+    color: var(--white);
+  }
+  .arw {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.55);
+    transition: color 0.2s var(--ease);
+  }
+  .arw:hover {
+    color: var(--white);
+  }
+
+  .fs {
+    position: absolute;
+    right: clamp(12px, 2vw, 22px);
+    bottom: clamp(12px, 2vw, 22px);
+    z-index: 20;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.2s var(--ease);
+  }
+  .fs:hover {
+    color: var(--white);
+  }
+
+  .hint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(clamp(14px, 2.4vw, 26px) + 30px);
+    transform: translateX(-50%);
+    z-index: 20;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.3);
+    transition: opacity 0.5s var(--ease);
+  }
+  .hint.gone {
+    opacity: 0;
+  }
+
+  @media (max-width: 640px) {
+    .fs {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import "../scripts/deck.ts";
+</script>
