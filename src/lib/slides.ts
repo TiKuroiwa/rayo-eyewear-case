@@ -11,6 +11,7 @@ import s08 from "../assets/slides/08.jpg";
 import s09 from "../assets/slides/09.jpg";
 import s10 from "../assets/slides/10.jpg";
 import s11 from "../assets/slides/11.jpg";
+import s12 from "../assets/slides/12.jpg";
 
 export interface Slide {
   src: ImageMetadata;
@@ -78,6 +79,11 @@ export const slides: Slide[] = [
     src: s11,
     label: "Red Edition",
     alt: "Edição vermelha: estojo preto com faixa elástica vermelha e o estojo desdobrado plano em camurça vermelha.",
+  },
+  {
+    src: s12,
+    label: "Red Edition",
+    alt: "Estojo origami preto aberto com forro de camurça vermelha, sobre pedra preta molhada com reflexo.",
   },
 ];
 
