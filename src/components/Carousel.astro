@@ -1,0 +1,156 @@
+---
+import { Image } from "astro:assets";
+import { shots } from "../lib/carousel";
+---
+
+<section
+  class="gallery"
+  id="s12"
+  data-slide="11"
+  aria-label="Estojos RAYO — galeria"
+>
+  <div class="g-sticky">
+    <ul class="g-strip" data-strip>
+      {
+        shots.map((shot, i) => (
+          <li class="g-cell" data-cell>
+            <button
+              type="button"
+              class="g-open"
+              data-open={i}
+              data-full={shot.src.src}
+              aria-label={`Ampliar imagem ${i + 1} de ${shots.length}`}
+            >
+              <Image
+                src={shot.src}
+                alt={shot.alt}
+                widths={[420, 760, 1100]}
+                sizes="(max-width: 780px) 70vw, 34vw"
+                loading={i < 3 ? "eager" : "lazy"}
+                decoding="async"
+              />
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<div
+  class="lightbox"
+  data-lightbox
+  role="dialog"
+  aria-modal="true"
+  aria-label="Imagem ampliada"
+  hidden
+>
+  <button type="button" class="lb-close" data-lb-close aria-label="Fechar">
+    <span aria-hidden="true">×</span>
+  </button>
+  <img data-lb-img alt="" />
+</div>
+
+<style>
+  .gallery {
+    position: relative;
+    height: 340svh;
+    background: var(--black);
+  }
+  .g-sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .g-strip {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: clamp(28px, 6vw, 110px);
+    will-change: transform;
+  }
+
+  .g-cell {
+    flex: 0 0 auto;
+    will-change: transform, opacity;
+    transform-origin: center;
+  }
+  .g-open {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    line-height: 0;
+  }
+  .g-open :global(img) {
+    height: clamp(220px, 56svh, 560px);
+    width: auto;
+    max-width: 80vw;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: clamp(16px, 4vw, 56px);
+    background: rgba(0, 0, 0, 0.92);
+    animation: lb-in 0.28s var(--ease);
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    cursor: zoom-out;
+  }
+  .lb-close {
+    position: absolute;
+    top: clamp(10px, 2.5vw, 26px);
+    right: clamp(10px, 2.5vw, 26px);
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--white);
+    opacity: 0.7;
+    transition: opacity 0.2s var(--ease);
+  }
+  .lb-close:hover {
+    opacity: 1;
+  }
+  @keyframes lb-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .g-strip,
+    .g-cell {
+      transform: none !important;
+    }
+    .lightbox {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import "../scripts/carousel.ts";
+</script>

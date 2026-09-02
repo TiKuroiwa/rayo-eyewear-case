@@ -1,8 +1,12 @@
 ---
 import { Image } from "astro:assets";
 import { slides } from "../lib/slides";
+import Carousel from "./Carousel.astro";
 
-const total = slides.length;
+// Canva deck (all but the final red shot) → gallery → final red shot.
+const deckSlides = slides.slice(0, 11);
+const finale = slides[11];
+const total = slides.length + 1; // + gallery section
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
@@ -10,7 +14,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 <main id="deck" aria-label="RAYO Eyewear — Collection 01">
   {
-    slides.map((slide, i) => (
+    deckSlides.map((slide, i) => (
       <section
         class="slide"
         id={`s${i + 1}`}
@@ -46,16 +50,37 @@ const pad = (n: number) => String(n).padStart(2, "0");
       </section>
     ))
   }
+
+  <Carousel />
+
+  <section
+    class="slide"
+    id="s13"
+    data-slide="12"
+    aria-roledescription="slide"
+    aria-label={`13 / ${total} — ${finale.label}`}
+  >
+    <div class="frame">
+      <Image
+        src={finale.src}
+        alt={finale.alt}
+        widths={[1280, 1920, 2560]}
+        sizes="100vw"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
 </main>
 
 <div class="hud">
-  <button type="button" class="arw" data-nav="prev" aria-label="Slide anterior">
+  <button type="button" class="arw" data-nav="prev" aria-label="Anterior">
     <span aria-hidden="true">↑</span>
   </button>
   <p class="count" aria-live="polite">
     <b id="count-cur">{pad(1)}</b><span> / {pad(total)}</span>
   </p>
-  <button type="button" class="arw" data-nav="next" aria-label="Próximo slide">
+  <button type="button" class="arw" data-nav="next" aria-label="Próximo">
     <span aria-hidden="true">↓</span>
   </button>
 </div>
@@ -73,7 +98,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 </script>
 
 <style>
-  /* scroll progress — top */
   .bar {
     position: fixed;
     inset: 0 0 auto 0;
@@ -88,7 +112,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
     background: var(--bolt);
   }
 
-  /* counter + jump arrows — bottom center, fixed */
   .hud {
     position: fixed;
     left: 50%;
