@@ -11,7 +11,6 @@ import s08 from "../assets/slides/08.jpg";
 import s09 from "../assets/slides/09.jpg";
 import s10 from "../assets/slides/10.jpg";
 import s11 from "../assets/slides/11.jpg";
-import s12 from "../assets/slides/12.jpg";
 
 export interface Slide {
   src: ImageMetadata;
@@ -80,15 +79,10 @@ export const slides: Slide[] = [
     label: "Red Edition",
     alt: "Edição vermelha: estojo preto com faixa elástica vermelha e o estojo desdobrado plano em camurça vermelha.",
   },
-  {
-    src: s12,
-    label: "See what comes next",
-    alt: "RAYO EYEWEAR — encerramento. Lockup branco da marca sobre parede preta texturizada.",
-  },
 ];
 
 export const meta = {
   title: "RAYO — Eyewear Case · Collection 01",
   description:
-    "A apresentação dos estojos RAYO Eyewear (Collection 01), por Rodrygo. Doze telas: do estojo rígido à Brasil Edition. See what comes next.",
+    "A apresentação dos estojos RAYO Eyewear (Collection 01), por Rodrygo — do estojo rígido à Brasil Edition.",
 };
