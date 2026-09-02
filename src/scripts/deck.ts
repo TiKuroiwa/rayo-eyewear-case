@@ -1,19 +1,32 @@
-// RAYO deck viewer — keyboard, wheel, swipe, click-zones, hash sync, per-slide video.
+// RAYO scroll deck — reveal on scroll, progress bar, counter, per-slide video,
+// keyboard / arrow jumps, hash deep-links.
 
 const deck = document.getElementById("deck");
 if (deck) {
-  const slides = Array.from(deck.querySelectorAll<HTMLElement>(".slide"));
+  const sections = Array.from(deck.querySelectorAll<HTMLElement>(".slide"));
   const bar = document.getElementById("bar")!;
   const countCur = document.getElementById("count-cur")!;
   const hint = document.getElementById("hint")!;
   const fsBtn = document.getElementById("fs")!;
-  const total = slides.length;
+  const root = document.documentElement;
+  const total = sections.length;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  let index = 0;
-  const clamp = (n: number) => Math.max(0, Math.min(total - 1, n));
+  // `current` is authoritative for nav intent; scrolling keeps it in sync.
+  let current = 0;
+
+  function setActive(i: number) {
+    if (i === current) return;
+    current = i;
+    countCur.textContent = String(i + 1).padStart(2, "0");
+    if (i > 0) hint.classList.add("gone");
+    const hash = `#s${i + 1}`;
+    if (location.hash !== hash) history.replaceState(null, "", hash);
+    warm(i + 1);
+  }
 
   function warm(i: number) {
-    const el = slides[i];
+    const el = sections[i];
     if (!el) return;
     const img = el.querySelector("img");
     if (img && img.loading === "lazy") img.loading = "eager";
@@ -21,129 +34,111 @@ if (deck) {
     if (vid && vid.preload === "metadata") vid.preload = "auto";
   }
 
-  function show(n: number) {
-    index = clamp(n);
-    slides.forEach((el, i) => {
-      const on = i === index;
-      el.classList.toggle("on", on);
-      el.setAttribute("aria-hidden", String(!on));
-      const vid = el.querySelector("video");
-      if (vid) {
-        if (on) {
-          vid.currentTime = 0;
-          vid.play().catch(() => {});
-        } else {
-          vid.pause();
+  // --- reveal + active tracking + video playback ---
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        const el = e.target as HTMLElement;
+        const i = Number(el.dataset.slide);
+        if (e.isIntersecting) el.classList.add("in");
+
+        const vid = el.querySelector("video");
+        if (vid) {
+          if (e.intersectionRatio > 0.55) vid.play().catch(() => {});
+          else vid.pause();
         }
+
+        if (e.intersectionRatio > 0.55) setActive(i);
       }
+    },
+    { threshold: [0, 0.55, 1] },
+  );
+  sections.forEach((s) => io.observe(s));
+
+  // --- scroll progress bar ---
+  let ticking = false;
+  function updateBar() {
+    const max = root.scrollHeight - innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+    bar.style.width = `${p * 100}%`;
+    ticking = false;
+  }
+  addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateBar);
+      }
+    },
+    { passive: true },
+  );
+  updateBar();
+
+  // --- jump to a slide ---
+  let snapTimer = 0;
+  function restoreSnap() {
+    root.style.scrollSnapType = "";
+    clearTimeout(snapTimer);
+    removeEventListener("scrollend", restoreSnap);
+  }
+  function goTo(i: number) {
+    const n = Math.max(0, Math.min(total - 1, i));
+    setActive(n); // update intent immediately so rapid presses chain
+    root.style.scrollSnapType = "none"; // snap can cancel a programmatic scroll
+    clearTimeout(snapTimer);
+    removeEventListener("scrollend", restoreSnap);
+    sections[n].scrollIntoView({
+      behavior: reduce ? "auto" : "smooth",
+      block: "start",
     });
-    bar.style.width = `${((index + 1) / total) * 100}%`;
-    countCur.textContent = String(index + 1).padStart(2, "0");
-    if (index > 0) hint.classList.add("gone");
-    if (location.hash !== `#${index + 1}`)
-      history.replaceState(null, "", `#${index + 1}`);
-    warm(index + 1);
-    warm(index - 1);
+    addEventListener("scrollend", restoreSnap, { once: true });
+    snapTimer = window.setTimeout(restoreSnap, 1600); // fallback
   }
 
-  const next = () => show(index + 1);
-  const prev = () => show(index - 1);
-
-  deck.querySelectorAll<HTMLElement>("[data-nav]").forEach((btn) => {
-    btn.addEventListener("click", () =>
-      btn.dataset.nav === "next" ? next() : prev(),
+  document
+    .querySelectorAll<HTMLElement>("[data-nav]")
+    .forEach((btn) =>
+      btn.addEventListener("click", () =>
+        goTo(current + (btn.dataset.nav === "next" ? 1 : -1)),
+      ),
     );
-  });
 
-  function toggleFs() {
-    if (document.fullscreenElement) document.exitFullscreen?.();
-    else document.documentElement.requestFullscreen?.();
-  }
-  fsBtn.addEventListener("click", toggleFs);
-
-  // keyboard
+  // --- keyboard ---
   addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "ArrowRight":
-      case "ArrowDown":
-      case "PageDown":
-      case " ":
-        e.preventDefault();
-        next();
-        break;
-      case "ArrowLeft":
-      case "ArrowUp":
-      case "PageUp":
-        e.preventDefault();
-        prev();
-        break;
-      case "Home":
-        e.preventDefault();
-        show(0);
-        break;
-      case "End":
-        e.preventDefault();
-        show(total - 1);
-        break;
-      case "f":
-      case "F":
-        toggleFs();
-        break;
+    if (e.key === "PageDown" || (e.key === "ArrowDown" && e.shiftKey)) {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (e.key === "PageUp" || (e.key === "ArrowUp" && e.shiftKey)) {
+      e.preventDefault();
+      goTo(current - 1);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      goTo(total - 1);
+    } else if (e.key === "f" || e.key === "F") {
+      toggleFs();
     }
   });
 
-  // wheel / trackpad — scroll to advance
-  let wheelLock = false;
-  let wheelAcc = 0;
-  addEventListener(
-    "wheel",
-    (e) => {
-      e.preventDefault();
-      if (wheelLock) return;
-      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      wheelAcc += d;
-      if (Math.abs(wheelAcc) > 40) {
-        wheelAcc > 0 ? next() : prev();
-        wheelAcc = 0;
-        wheelLock = true;
-        setTimeout(() => (wheelLock = false), 620);
-      }
-    },
-    { passive: false },
-  );
+  // --- fullscreen ---
+  function toggleFs() {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else root.requestFullscreen?.();
+  }
+  fsBtn.addEventListener("click", toggleFs);
 
-  // touch swipe
-  let x0: number | null = null;
-  let y0 = 0;
-  addEventListener(
-    "touchstart",
-    (e) => {
-      x0 = e.touches[0].clientX;
-      y0 = e.touches[0].clientY;
-    },
-    { passive: true },
-  );
-  addEventListener(
-    "touchend",
-    (e) => {
-      if (x0 === null) return;
-      const dx = e.changedTouches[0].clientX - x0;
-      const dy = e.changedTouches[0].clientY - y0;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) > 44) {
-        if (Math.abs(dx) >= Math.abs(dy)) dx < 0 ? next() : prev();
-        else dy < 0 ? next() : prev();
-      }
-      x0 = null;
-    },
-    { passive: true },
-  );
-
-  addEventListener("hashchange", () => {
-    const n = parseInt(location.hash.slice(1), 10);
-    if (Number.isInteger(n) && n >= 1 && n <= total) show(n - 1);
-  });
-
-  const start = parseInt(location.hash.slice(1), 10);
-  show(Number.isInteger(start) && start >= 1 && start <= total ? start - 1 : 0);
-  deck.focus({ preventScroll: true });
+  // --- hash deep-link ---
+  function fromHash() {
+    const m = location.hash.match(/^#s(\d+)$/);
+    if (m) {
+      const i = parseInt(m[1], 10) - 1;
+      if (i >= 0 && i < total && i !== current)
+        requestAnimationFrame(() => goTo(i));
+    }
+  }
+  addEventListener("hashchange", fromHash);
+  if (location.hash) fromHash();
 }

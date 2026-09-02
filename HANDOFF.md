@@ -17,10 +17,13 @@ nada reinterpretado.
 
 ## Interação
 
-Teclado (← → ↑ ↓ espaço PageUp/Down Home End), scroll/trackpad, swipe, zonas de
-clique (30% esquerda/direita), setas e contador no rodapé, barra de progresso no
-topo, botão de tela cheia (`F`), deep-link por hash (`/#7`). Vídeo do slide 02 dá
-play só quando o slide está ativo e pausa ao sair. Respeita `prefers-reduced-motion`.
+Site de **rolagem** (scroll): cada slide é uma seção de tela cheia, com
+`scroll-snap` de proximidade e um leve fade/scale ao entrar na viewport.
+Rolagem do mouse/trackpad, swipe no celular, setas ↑/↓ e contador no rodapé,
+`PageUp`/`PageDown`/`Home`/`End`, barra de progresso presa no topo, tela cheia
+(`F` ou botão ⤢), deep-link por hash (`/#s7`). O vídeo do slide 02 dá play só
+quando o slide está visível e pausa ao sair. Respeita `prefers-reduced-motion`
+(sem snap, sem animação).
 
 ## Deploy (Vercel)
 

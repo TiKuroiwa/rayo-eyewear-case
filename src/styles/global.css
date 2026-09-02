@@ -1,4 +1,4 @@
-/* RAYO — deck viewer. Minimal reset + tokens. */
+/* RAYO — scroll deck. Minimal reset + tokens. */
 
 *,
 *::before,
@@ -19,26 +19,23 @@
   color-scheme: dark;
 }
 
-html,
-body {
-  height: 100%;
-}
-
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background: var(--black);
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
 }
 
 body {
+  min-height: 100svh;
   background: var(--black);
   color: var(--white);
   font-family:
     "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 img,
@@ -67,6 +64,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+  }
   *,
   *::before,
   *::after {

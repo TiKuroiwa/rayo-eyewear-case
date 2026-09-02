@@ -6,22 +6,19 @@ const total = slides.length;
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
-<div
-  id="deck"
-  role="region"
-  aria-roledescription="slideshow"
-  aria-label="RAYO Eyewear — Collection 01"
-  tabindex="0"
->
-  <div class="stage">
-    {
-      slides.map((slide, i) => (
-        <figure
-          class:list={["slide", { on: i === 0 }]}
-          aria-hidden={i === 0 ? "false" : "true"}
-          aria-roledescription="slide"
-          aria-label={`${i + 1} / ${total} — ${slide.label}`}
-        >
+<div class="bar" aria-hidden="true"><i id="bar"></i></div>
+
+<main id="deck" aria-label="RAYO Eyewear — Collection 01">
+  {
+    slides.map((slide, i) => (
+      <section
+        class="slide"
+        id={`s${i + 1}`}
+        data-slide={i}
+        aria-roledescription="slide"
+        aria-label={`${i + 1} / ${total} — ${slide.label}`}
+      >
+        <div class="frame">
           {slide.video ? (
             <video
               data-video
@@ -45,181 +42,182 @@ const pad = (n: number) => String(n).padStart(2, "0");
               decoding="async"
             />
           )}
-        </figure>
-      ))
-    }
+        </div>
+      </section>
+    ))
+  }
+</main>
 
-    <button class="edge prev" data-nav="prev" aria-label="Slide anterior"></button>
-    <button class="edge next" data-nav="next" aria-label="Próximo slide"></button>
-  </div>
-
-  <div class="bar" aria-hidden="true"><i id="bar"></i></div>
-
-  <div class="hud">
-    <button type="button" class="arw" data-nav="prev" aria-label="Slide anterior">
-      <span aria-hidden="true">‹</span>
-    </button>
-    <p class="count" aria-live="polite">
-      <b id="count-cur">{pad(1)}</b>
-      <span> / {pad(total)}</span>
-    </p>
-    <button type="button" class="arw" data-nav="next" aria-label="Próximo slide">
-      <span aria-hidden="true">›</span>
-    </button>
-  </div>
-
-  <button type="button" id="fs" class="fs" aria-label="Tela cheia">
-    <span aria-hidden="true">⤢</span>
+<div class="hud">
+  <button type="button" class="arw" data-nav="prev" aria-label="Slide anterior">
+    <span aria-hidden="true">↑</span>
   </button>
-
-  <p class="hint" id="hint" aria-hidden="true">← →</p>
+  <p class="count" aria-live="polite">
+    <b id="count-cur">{pad(1)}</b><span> / {pad(total)}</span>
+  </p>
+  <button type="button" class="arw" data-nav="next" aria-label="Próximo slide">
+    <span aria-hidden="true">↓</span>
+  </button>
 </div>
+
+<button type="button" id="fs" class="fs" aria-label="Tela cheia">
+  <span aria-hidden="true">⤢</span>
+</button>
+
+<p class="hint" id="hint" aria-hidden="true">
+  Role <span aria-hidden="true">↓</span>
+</p>
+
+<script>
+  import "../scripts/deck.ts";
+</script>
 
 <style>
   #deck {
-    position: fixed;
-    inset: 0;
-    background: var(--black);
-    overflow: hidden;
-    display: grid;
-    place-items: center;
-  }
-  #deck:focus {
-    outline: none;
+    display: block;
   }
 
-  /* 16:9 frame, as large as fits — deck art is never cropped */
-  .stage {
+  .slide {
+    position: relative;
+    min-height: 100svh;
+    scroll-snap-align: start;
+    display: grid;
+    place-items: center;
+    background: var(--black);
+    overflow: hidden;
+  }
+
+  /* 16:9 frame — deck art is never cropped */
+  .frame {
     position: relative;
     aspect-ratio: 16 / 9;
     width: min(100vw, 177.7778vh);
     background: var(--black);
+    opacity: 0.35;
+    transform: scale(1.03);
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.9s var(--ease);
+  }
+  .slide.in .frame {
+    opacity: 1;
+    transform: none;
   }
 
-  .slide {
+  .frame :global(img),
+  .frame video {
     position: absolute;
     inset: 0;
-    margin: 0;
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 0.45s var(--ease),
-      visibility 0.45s var(--ease);
-  }
-  .slide.on {
-    opacity: 1;
-    visibility: visible;
-  }
-  .slide :global(img),
-  .slide video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
-    display: block;
   }
 
-  /* invisible click zones over the stage */
-  .edge {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 30%;
-    z-index: 5;
-    background: transparent;
-    border: 0;
-  }
-  .edge.prev {
-    left: 0;
-    cursor: w-resize;
-  }
-  .edge.next {
-    right: 0;
-    cursor: e-resize;
-  }
-
-  /* progress bar — top of viewport */
+  /* scroll progress — top */
   .bar {
-    position: absolute;
+    position: fixed;
     inset: 0 0 auto 0;
     height: 2px;
     background: rgba(255, 255, 255, 0.1);
-    z-index: 20;
+    z-index: 30;
   }
   .bar i {
     display: block;
     height: 100%;
-    width: 8.33%;
+    width: 0;
     background: var(--bolt);
-    transition: width 0.45s var(--ease);
   }
 
-  /* nav — bottom-center of viewport */
+  /* counter + jump arrows — bottom center, fixed */
   .hud {
-    position: absolute;
+    position: fixed;
     left: 50%;
     bottom: clamp(14px, 2.4vw, 26px);
     transform: translateX(-50%);
-    z-index: 20;
+    z-index: 30;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
+    mix-blend-mode: difference;
   }
   .count {
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.22em;
     font-variant-numeric: tabular-nums;
-    color: var(--muted);
+    color: var(--white);
     user-select: none;
   }
-  .count b {
-    color: var(--white);
+  .count span {
+    opacity: 0.55;
   }
   .arw {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     display: grid;
     place-items: center;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     line-height: 1;
-    color: rgba(255, 255, 255, 0.55);
-    transition: color 0.2s var(--ease);
+    color: var(--white);
+    opacity: 0.55;
+    transition: opacity 0.2s var(--ease);
   }
   .arw:hover {
-    color: var(--white);
+    opacity: 1;
   }
 
   .fs {
-    position: absolute;
+    position: fixed;
     right: clamp(12px, 2vw, 22px);
     bottom: clamp(12px, 2vw, 22px);
-    z-index: 20;
-    width: 34px;
-    height: 34px;
+    z-index: 30;
+    width: 32px;
+    height: 32px;
     display: grid;
     place-items: center;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.4);
-    transition: color 0.2s var(--ease);
+    color: var(--white);
+    opacity: 0.4;
+    mix-blend-mode: difference;
+    transition: opacity 0.2s var(--ease);
   }
   .fs:hover {
-    color: var(--white);
+    opacity: 1;
   }
 
   .hint {
-    position: absolute;
+    position: fixed;
     left: 50%;
     bottom: calc(clamp(14px, 2.4vw, 26px) + 30px);
     transform: translateX(-50%);
-    z-index: 20;
-    font-size: 0.7rem;
-    letter-spacing: 0.3em;
-    color: rgba(255, 255, 255, 0.3);
+    z-index: 30;
+    font-size: 0.6875rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--white);
+    opacity: 0.4;
+    mix-blend-mode: difference;
     transition: opacity 0.5s var(--ease);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hint span {
+    animation: nudge 1.6s var(--ease) infinite;
   }
   .hint.gone {
     opacity: 0;
+    pointer-events: none;
+  }
+  @keyframes nudge {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(3px);
+    }
   }
 
   @media (max-width: 640px) {
@@ -228,7 +226,3 @@ const pad = (n: number) => String(n).padStart(2, "0");
     }
   }
 </style>
-
-<script>
-  import "../scripts/deck.ts";
-</script>
