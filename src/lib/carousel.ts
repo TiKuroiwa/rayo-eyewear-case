@@ -7,7 +7,6 @@ import c04 from "../assets/carousel/04.jpg";
 import c05 from "../assets/carousel/05.jpg";
 import c06 from "../assets/carousel/06.jpg";
 import c07 from "../assets/carousel/07.jpg";
-import c08 from "../assets/carousel/08.jpg";
 
 export interface Shot {
   src: ImageMetadata;
@@ -23,5 +22,4 @@ export const shots: Shot[] = [
   { src: c05, alt: "Estojo RAYO antracite aberto com óculos de lente azul, fundo azul e reflexo." },
   { src: c06, alt: "Estojo origami grafite RAYO entreaberto com relevo do símbolo, estúdio cinza." },
   { src: c07, alt: "Estojo RAYO preto aberto com forro de camurça amarela e óculos brancos sobre pedra." },
-  { src: c08, alt: "Estojo RAYO preto com faixa elástica vermelha sobre fundo vermelho." },
 ];

@@ -8,21 +8,19 @@ import s05 from "../assets/slides/05.jpg";
 import s06 from "../assets/slides/06.jpg";
 import s07 from "../assets/slides/07.jpg";
 import s08 from "../assets/slides/08.jpg";
-import s09 from "../assets/slides/09.jpg";
 import s10 from "../assets/slides/10.jpg";
 import s11 from "../assets/slides/11.jpg";
-import s12 from "../assets/slides/12.jpg";
 
 export interface Slide {
   src: ImageMetadata;
-  /** Screen-reader / SEO description of the slide. */
   alt: string;
-  /** Short label for the slide-list navigation. */
   label: string;
-  /** Optional looping video (path base under /public, without extension). */
   video?: string;
 }
 
+// Full-bleed Canva slides, in order. (Canva slide 9 — the pebble case — was
+// dropped: that shot lives in the gallery. The finale red pair is composed
+// separately in Deck.astro.)
 export const slides: Slide[] = [
   {
     src: s01,
@@ -38,7 +36,7 @@ export const slides: Slide[] = [
   {
     src: s03,
     label: "The second before",
-    alt: "THE SECOND BEFORE / THE LIGHT. Óculos esportivos azuis e brancos na chuva sobre pedra molhada. THE UNBOXING IS THE SECOND PRODUCT.",
+    alt: "THE SECOND BEFORE / THE LIGHT. Óculos esportivos azuis e brancos na chuva sobre pedra molhada.",
   },
   {
     src: s04,
@@ -66,11 +64,6 @@ export const slides: Slide[] = [
     alt: "BRASIL EDITION / LIMITED. Estojo verde e amarelo com faixa elástica e RAYO em relevo; aberto; e desdobrado plano em camurça amarela.",
   },
   {
-    src: s09,
-    label: "Eyewear case",
-    alt: "Estojo rígido preto em forma de gota com o entalhe do raio, apoiado ao lado de óculos de armação branca sobre pedra.",
-  },
-  {
     src: s10,
     label: "The light does the branding",
     alt: "THE LIGHT DOES THE BRANDING. Estojo rígido texturizado em carbono com etiqueta RAYO em relevo e clamshell aberto com óculos brancos.",
@@ -80,15 +73,10 @@ export const slides: Slide[] = [
     label: "Red Edition",
     alt: "Edição vermelha: estojo preto com faixa elástica vermelha e o estojo desdobrado plano em camurça vermelha.",
   },
-  {
-    src: s12,
-    label: "Red Edition",
-    alt: "Estojo origami preto aberto com forro de camurça vermelha, sobre pedra preta molhada com reflexo.",
-  },
 ];
 
 export const meta = {
   title: "RAYO — Eyewear Case · Collection 01",
   description:
-    "A apresentação dos estojos RAYO Eyewear (Collection 01), por Rodrygo — do estojo rígido à Brasil Edition.",
+    "A apresentação dos estojos RAYO Eyewear (Collection 01), por Rodrygo — do estojo rígido à Red Edition.",
 };

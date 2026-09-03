@@ -2,11 +2,11 @@
 import { Image } from "astro:assets";
 import { slides } from "../lib/slides";
 import Carousel from "./Carousel.astro";
+import redOpen from "../assets/slides/12.jpg";
+import redClosed from "../assets/slides/12-closed.jpg";
 
-// Canva deck (all but the final red shot) → gallery → final red shot.
-const deckSlides = slides.slice(0, 11);
-const finale = slides[11];
-const total = slides.length + 1; // + gallery section
+// 10 Canva slides → gallery → composed Red Edition pair (open + closed).
+const total = slides.length + 2;
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
@@ -14,7 +14,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 <main id="deck" aria-label="RAYO Eyewear — Collection 01">
   {
-    deckSlides.map((slide, i) => (
+    slides.map((slide, i) => (
       <section
         class="slide"
         id={`s${i + 1}`}
@@ -55,20 +55,32 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
   <section
     class="slide"
-    id="s13"
-    data-slide="12"
+    id="s12"
+    data-slide="11"
     aria-roledescription="slide"
-    aria-label={`13 / ${total} — ${finale.label}`}
+    aria-label={`12 / ${total} — Red Edition`}
   >
-    <div class="frame">
-      <Image
-        src={finale.src}
-        alt={finale.alt}
-        widths={[1280, 1920, 2560]}
-        sizes="100vw"
-        loading="lazy"
-        decoding="async"
-      />
+    <div class="frame redpair">
+      <figure class="rp rp-open">
+        <Image
+          src={redOpen}
+          alt="Estojo origami RAYO preto aberto com forro de camurça vermelha, sobre pedra molhada."
+          widths={[900, 1400, 2048]}
+          sizes="90vw"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+      <figure class="rp rp-closed">
+        <Image
+          src={redClosed}
+          alt="Estojo RAYO preto fechado com faixa elástica vermelha, sobre fundo vermelho."
+          widths={[500, 900]}
+          sizes="45vw"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
     </div>
   </section>
 </main>
@@ -98,6 +110,33 @@ const pad = (n: number) => String(n).padStart(2, "0");
 </script>
 
 <style>
+  /* Red Edition — open shot + closed shot stacked (composed, like the Brasil slide) */
+  .redpair {
+    aspect-ratio: 5 / 6;
+    width: min(62vw, 62svh);
+  }
+  .redpair {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: clamp(10px, 1.6vw, 20px);
+    align-content: center;
+  }
+  .redpair .rp {
+    margin: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .redpair .rp :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .redpair .rp-closed :global(img) {
+    transform: scale(0.86);
+  }
+
   .bar {
     position: fixed;
     inset: 0 0 auto 0;

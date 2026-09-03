@@ -4,19 +4,19 @@ import { shots } from "../lib/carousel";
 ---
 
 <section
-  class="gallery"
-  id="s12"
-  data-slide="11"
+  class="slide gallery"
+  id="s11"
+  data-slide="10"
   aria-label="Estojos RAYO — galeria"
 >
-  <div class="g-sticky">
-    <ul class="g-strip" data-strip>
+  <div class="cf" data-cf>
+    <ul class="cf-track" data-cf-track>
       {
         shots.map((shot, i) => (
-          <li class="g-cell" data-cell>
+          <li class="cf-cell" data-cf-cell data-i={i}>
             <button
               type="button"
-              class="g-open"
+              class="cf-open"
               data-open={i}
               data-full={shot.src.src}
               aria-label={`Ampliar imagem ${i + 1} de ${shots.length}`}
@@ -25,15 +25,36 @@ import { shots } from "../lib/carousel";
                 src={shot.src}
                 alt={shot.alt}
                 widths={[420, 760, 1100]}
-                sizes="(max-width: 780px) 70vw, 34vw"
+                sizes="(max-width: 780px) 60vw, 30vw"
                 loading={i < 3 ? "eager" : "lazy"}
                 decoding="async"
+                draggable={false}
               />
             </button>
           </li>
         ))
       }
     </ul>
+
+    <button type="button" class="cf-arw prev" data-cf-nav="-1" aria-label="Anterior">
+      <span aria-hidden="true">‹</span>
+    </button>
+    <button type="button" class="cf-arw next" data-cf-nav="1" aria-label="Próximo">
+      <span aria-hidden="true">›</span>
+    </button>
+
+    <div class="cf-dots" role="tablist" aria-label="Estojos">
+      {
+        shots.map((_, i) => (
+          <button
+            type="button"
+            class="cf-dot"
+            data-cf-dot={i}
+            aria-label={`Ir para imagem ${i + 1}`}
+          />
+        ))
+      }
+    </div>
   </div>
 </section>
 
@@ -53,48 +74,101 @@ import { shots } from "../lib/carousel";
 
 <style>
   .gallery {
-    position: relative;
-    height: 340svh;
+    display: block;
     background: var(--black);
-  }
-  .g-sticky {
-    position: sticky;
-    top: 0;
-    height: 100svh;
-    display: flex;
-    align-items: center;
     overflow: hidden;
   }
+  .cf {
+    position: relative;
+    width: 100vw;
+    height: 100svh;
+    overflow: hidden;
+    perspective: 1600px;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .cf:active {
+    cursor: grabbing;
+  }
 
-  .g-strip {
-    list-style: none;
+  .cf-track {
+    position: absolute;
+    inset: 0;
     margin: 0;
     padding: 0;
-    display: flex;
-    align-items: center;
-    gap: clamp(28px, 6vw, 110px);
-    will-change: transform;
+    list-style: none;
+    transform-style: preserve-3d;
   }
 
-  .g-cell {
-    flex: 0 0 auto;
+  .cf-cell {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     will-change: transform, opacity;
-    transform-origin: center;
   }
-  .g-open {
+  .cf-open {
     display: block;
     padding: 0;
     border: 0;
     background: none;
-    cursor: zoom-in;
     line-height: 0;
+    cursor: zoom-in;
   }
-  .g-open :global(img) {
-    height: clamp(220px, 56svh, 560px);
+  .cf-open :global(img) {
+    height: clamp(240px, 54svh, 560px);
     width: auto;
-    max-width: 80vw;
+    max-width: 72vw;
     object-fit: contain;
     display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .cf-arw {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 900;
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    color: var(--white);
+    opacity: 0.5;
+    transition: opacity 0.2s var(--ease);
+  }
+  .cf-arw:hover {
+    opacity: 1;
+  }
+  .cf-arw.prev {
+    left: clamp(6px, 2vw, 26px);
+  }
+  .cf-arw.next {
+    right: clamp(6px, 2vw, 26px);
+  }
+
+  .cf-dots {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(58px, 9vw, 96px);
+    transform: translateX(-50%);
+    z-index: 900;
+    display: flex;
+    gap: 10px;
+  }
+  .cf-dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.24);
+    transition:
+      background-color 0.3s var(--ease),
+      transform 0.3s var(--ease);
+  }
+  .cf-dot[aria-current="true"] {
+    background: var(--bolt);
+    transform: scale(1.5);
   }
 
   /* lightbox */
@@ -105,7 +179,7 @@ import { shots } from "../lib/carousel";
     display: grid;
     place-items: center;
     padding: clamp(16px, 4vw, 56px);
-    background: rgba(0, 0, 0, 0.92);
+    background: rgba(0, 0, 0, 0.93);
     animation: lb-in 0.28s var(--ease);
   }
   .lightbox[hidden] {
@@ -141,10 +215,6 @@ import { shots } from "../lib/carousel";
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .g-strip,
-    .g-cell {
-      transform: none !important;
-    }
     .lightbox {
       animation: none;
     }
